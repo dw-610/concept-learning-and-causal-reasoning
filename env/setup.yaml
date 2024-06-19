@@ -1,0 +1,15 @@
+name: sccsr-env
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+dependencies:
+  - python=3.10.12
+  - numpy
+  - matplotlib
+  - pandas
+  - pip:
+      - tensorflow[and-cuda]
+      - opencv-python
+      - comet-ml
+      - tqdm
