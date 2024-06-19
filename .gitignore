@@ -1,4 +1,7 @@
 local/raw_data/
 local/memmap_data/
 local/GTSRB/
+local/models/
 modules/__pycache__/
+modules/cslearn/__pycache__/
+modules/cslearn/arch/__pycache__/

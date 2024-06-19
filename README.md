@@ -11,7 +11,7 @@ The project experimental results can be recreated using the code in this reposit
 An Anaconda environment was created to carry out the experiments. This environment can be created using the file `env/setup.yaml`. First, be sure to [install Anaconda](https://docs.anaconda.com/anaconda/install/). Then open a terminal and navigate to the `env/` subdirectory in this repository and run the command:
 
 ```bash
-conda env create -f setup.yml
+conda env create -f setup.yaml
 ```
 
 Once the environment has been created, to activate it run the command:
@@ -66,7 +66,7 @@ We also need domain-specific labels for the color and shape domains. To create t
 
 ### Learn the domains
 
-(domain learning here)
+Domain learning is done using the [CSLearn package](https://github.com/dw-610/CSLearn).
 
 ### Carry out causal learning
 
