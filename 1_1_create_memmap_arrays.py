@@ -1,7 +1,6 @@
 """
-This script implements the pipeline for the data.
-
-The labels of the resulting data correspond to the original labels.
+This script uses the pipeline module to load the raw data and save it as
+memory-mapped NumPy arrays.
 """
 
 # ------------------------------------------------------------------------------
@@ -27,6 +26,14 @@ def main():
     tst_image_dir = 'local/raw_data/test/images/'
     tst_anno_file = 'local/raw_data/test/anno.csv'
     save_dir = 'local/memmap_data'
+
+    # --- create the save directory if it does not exist ---
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+        print(f'Save directory created: {save_dir}')
+    else:
+        print(f'Save directory already exists: {save_dir}')
 
     # --- training data ---
     
@@ -61,9 +68,9 @@ def main():
     train_labels = pipe.labels_to_one_hot(train_labels)
     train_data, train_labels = pipe.shuffle_data(train_data, train_labels)
 
-    # UNCOMMENT TO VISUALIZE TRAIN DATA
-    _labels = np.argmax(train_labels, axis=1)
-    vis.show_processed_images(train_data, _labels, 4)
+    # # UNCOMMENT TO VISUALIZE TRAIN DATA
+    # _labels = np.argmax(train_labels, axis=1)
+    # vis.show_processed_images(train_data, _labels, 4)
 
     print('\nTraining data and labels loaded.')
     print(f'train_data.shape: {train_data.shape}')
@@ -77,9 +84,9 @@ def main():
     test_labels = pipe.labels_to_one_hot(test_labels)
     test_data, test_labels = pipe.shuffle_data(test_data, test_labels)
 
-    # UNCOMMENT TO VISUALIZE TEST DATA
-    _labels = np.argmax(test_labels, axis=1)
-    vis.show_processed_images(test_data, _labels, 4)
+    # # UNCOMMENT TO VISUALIZE TEST DATA
+    # _labels = np.argmax(test_labels, axis=1)
+    # vis.show_processed_images(test_data, _labels, 4)
 
     print('\nTest data and labels loaded.')
     print(f'test_data.shape: {test_data.shape}')

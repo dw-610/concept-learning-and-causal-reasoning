@@ -1,6 +1,6 @@
 """
-This script impelements the pipeline for the data, assigning new labels
-according to the chosen map.
+This script assigns new labels to the datasets. These new labels are defined in
+the label_maps.py module.
 """
 
 # ------------------------------------------------------------------------------
