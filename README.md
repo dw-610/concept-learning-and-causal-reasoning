@@ -64,21 +64,33 @@ To use the raw data for learning the domains, the raw images are packaged into m
 
 We also need domain-specific labels for the color and shape domains. To create these new label arrays, run the script `1_2_create_new_labels.py`. This script creates new memory-mapped arrays with the corresponding labels and saves them to `local/memmap_data/`.
 
-### Learn the domains
+### 2. Learn the domains
 
 Domain learning is done using the [CSLearn package](https://github.com/dw-610/CSLearn). This package contains code for training domain learners using the autoencoder-based approach, including the VAE and $p$-Wasserstein methods discussed in the paper.
 
-To train the models to learn the color and shape domains, simply run the script `2_1_train_domain_learner.py`. This script will load all of the data and perform domain learning for these two domains, saving the resulting models to the `local/models/` subdirectory.
+The relevant domains to be learned for the German Traffic sign images are the *shape*, *color*, and *symbol* domains.
 
-### Carry out causal learning
+#### Symbol Domain Embedding
+
+To use the $p$-Wasserstein loss function, we must specify the distances between the properties of the domain we intend to learn. This can easily be done manually for the color and shape domains to match human perception, but the symbol domain presents a more difficult challenge, where almost each of the 43 original classes represent a unique property.
+
+To obtain the distances between the properties for training, we first create text descriptions of the symbol on each sign and store them in the `symbol_descriptions.py` module. We then use SBERT to obtain embeddings of these descriptions, for which the Euclidean distances are found to obtain the distance matrix.
+
+To obtain these embeddings, run the script `2_1_embed_symbol_descriptions.py`. This script implements SBERT and saves the resulting embeddings to `local/models/` as a `.npy` file. In this script, you can set the variable `EVALUATE = True` to visualize the distance/similarity structure as heat maps.
+
+#### Training the models
+
+To train the models to learn the domains, simply run the script `2_2_train_domain_learners.py`. This script will load all of the data and perform domain learning for the three domains, saving the resulting models to the `local/models/` subdirectory.
+
+### 3. Carry out causal learning
 
 (causal learning here)
 
-### Train the semantic decoder
+### 4. Train the semantic decoder
 
 (decoder training here)
 
-### Prepare the baseline models
+### 5. Prepare the baseline models
 
 (baseline models here)
 
@@ -90,6 +102,6 @@ To train the models to learn the color and shape domains, simply run the script 
 
 (end-to-end semantic model training here)
 
-### Perform wireless simulations
+### 6. Perform wireless simulations
 
 (wireless simulation here)
