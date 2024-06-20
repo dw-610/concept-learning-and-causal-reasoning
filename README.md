@@ -66,7 +66,9 @@ We also need domain-specific labels for the color and shape domains. To create t
 
 ### Learn the domains
 
-Domain learning is done using the [CSLearn package](https://github.com/dw-610/CSLearn).
+Domain learning is done using the [CSLearn package](https://github.com/dw-610/CSLearn). This package contains code for training domain learners using the autoencoder-based approach, including the VAE and $p$-Wasserstein methods discussed in the paper.
+
+To train the models to learn the color and shape domains, simply run the script `2_1_train_domain_learner.py`. This script will load all of the data and perform domain learning for these two domains, saving the resulting models to the `local/models/` subdirectory.
 
 ### Carry out causal learning
 

@@ -7,6 +7,7 @@ This script trains a domain learner on the sign data.
 
 import os
 import numpy as np
+import keras.backend as K
 
 from modules.cslearn.controllers import ImageLearningController
 
@@ -19,16 +20,24 @@ def main(domain: str):
 
     IM_SIZE: int            = 64
     NUM_CHANNELS: int       = 3
-    NUM_CLASSES: int        = 4
+    NUM_CLASSES: int        = 43 if domain == 'symbols' else 4
 
     DATA_DIR: str          = 'local/memmap_data/'
 
-    PATHS_DICT: dict = {
-        'train_data_path': DATA_DIR + 'signs_dom_trn_data.npy',
-        'train_labels_path': DATA_DIR + f'signs_dom_trn_labels_{domain}.npy',
-        'valid_data_path': DATA_DIR + 'signs_tst_data.npy',
-        'valid_labels_path': DATA_DIR + f'signs_tst_labels_{domain}.npy'
-    }
+    if domain is not 'symbols':
+        PATHS_DICT: dict = {
+            'train_data_path': DATA_DIR + 'signs_dom_trn_data.npy',
+            'train_labels_path': DATA_DIR + f'signs_dom_trn_labels_{domain}.npy',
+            'valid_data_path': DATA_DIR + 'signs_tst_data.npy',
+            'valid_labels_path': DATA_DIR + f'signs_tst_labels_{domain}.npy'
+        }
+    else:
+        PATHS_DICT: dict = {
+            'train_data_path': DATA_DIR + 'signs_dom_trn_data.npy',
+            'train_labels_path': DATA_DIR + f'signs_dom_trn_labels.npy',
+            'valid_data_path': DATA_DIR + 'signs_tst_data.npy',
+            'valid_labels_path': DATA_DIR + f'signs_tst_labels.npy'
+        }
 
     SHAPES_DICT: dict = {
         'train_data_shape': (TRAIN_SET_SIZE, IM_SIZE, IM_SIZE, NUM_CHANNELS),
@@ -41,7 +50,12 @@ def main(domain: str):
 
     BATCH_SIZE: int         = 64
 
-    LATENT_DIM: int         = 1
+    if domain == 'shapes':
+        LATENT_DIM: int     = 2
+    elif domain == 'colors':
+        LATENT_DIM: int     = 3
+    elif domain == 'symbols':
+        LATENT_DIM: int     = 15
     ARCH: str               = 'custom_cnn'
     AE_TYPE: str            = 'variational'
     GLOBAL_POOL_TYPE: str   = 'max'
@@ -51,7 +65,7 @@ def main(domain: str):
     STRIDES: list           = [2, 2, 2, 2, 2]
     DROPOUT: float          = 0.0
 
-    EPOCHS: int             = 75
+    EPOCHS: int             = 200
     STEPS_PER_EPOCH: int    = 200
     PROTO_STEP_SIZE: int    = 200
     MU: float               = 0.75
@@ -60,7 +74,7 @@ def main(domain: str):
     LOSS: str               = 'wasserstein'
     SCHEDULE: str           = 'cosine'
     SCH_INIT: float         = 1e-4
-    SCH_WARMUP_EPOCHS: int  = 15
+    SCH_WARMUP_EPOCHS: int  = 40
     SCH_WARMUP_STEPS: int   = STEPS_PER_EPOCH * SCH_WARMUP_EPOCHS
     SCH_TARGET: float       = 1e-3
     SCH_DECAY_STEPS: int    = STEPS_PER_EPOCH * (EPOCHS - SCH_WARMUP_EPOCHS)
@@ -86,6 +100,12 @@ def main(domain: str):
                 [1.5, 1.5, 1.5, 0.0]
             ]
         ).astype(np.float32)/2.0
+    elif domain == 'symbols':
+        EMBEDDINGS = np.load('local/models/symbol_embeddings.npy')
+        METRIC_M = np.zeros((NUM_CLASSES, NUM_CLASSES), dtype=np.float32)
+        for i in range(NUM_CLASSES):
+            for j in range(NUM_CLASSES):
+                METRIC_M[i, j] = np.linalg.norm(EMBEDDINGS[i] - EMBEDDINGS[j])
     else:
         raise ValueError('Invalid domain.')
     WASS_P: float           = 1.0
@@ -130,10 +150,12 @@ def main(domain: str):
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print('\n\nTraining domain learner on shapes data.')
-    main('shapes')
 
-    print('\n\nTraining domain learner on colors data.')
-    main('colors')
+    domains = ['shapes', 'colors', 'symbols']
+
+    for domain in domains:
+        print(f'\n\nEvaluating domain learner on {domain} data.')
+        main(domain)
+        K.clear_session()
 
 # ------------------------------------------------------------------------------

@@ -852,6 +852,14 @@ class ImageLearningController():
         # save the prototypes
         if self.learner_type == 'domain_learner':
             np.save(save_path + 'prototypes.npy', self.prototypes)
+
+        # save the training history
+        if self.learner_type is not 'autoencoder':
+            train_acc_array = np.array(self.training_history['accuracy'])
+            valid_acc_array = np.array(self.training_history['val_accuracy'])
+
+            np.save(save_path + 'train_acc.npy', train_acc_array)
+            np.save(save_path + 'valid_acc.npy', valid_acc_array)
         
         print(f'Models saved to {save_path}.')
 

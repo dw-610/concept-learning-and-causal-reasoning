@@ -4,14 +4,6 @@ This module contains dictionaries mapping the original labels to the new labels.
 
 # ------------------------------------------------------------------------------
 
-"""
-Shape map.
-- 0: triangle
-- 1: square
-- 2: octagon
-- 3: circle
-"""
-
 shape_map = {
     0: 3,
     1: 3,
@@ -57,17 +49,15 @@ shape_map = {
     41: 3,
     42: 3
 }
+"""
+Shape map.
+- 0: triangle
+- 1: square
+- 2: octagon
+- 3: circle
+"""
 
 # ------------------------------------------------------------------------------
-
-"""
-Color map.
-
-- 0: red
-- 1: blue
-- 2: yellow
-- 3: black
-"""
 
 color_map = {
     0: 0,
@@ -114,6 +104,14 @@ color_map = {
     41: 3,
     42: 3
 }
+"""
+Color map.
+
+- 0: red
+- 1: blue
+- 2: yellow
+- 3: black
+"""
 
 # ------------------------------------------------------------------------------
 
