@@ -3,6 +3,8 @@ local/memmap_data/
 local/GTSRB/
 local/models/
 local/figures/
+local/causal_data/
 modules/__pycache__/
 modules/cslearn/__pycache__/
 modules/cslearn/arch/__pycache__/
+modules/causal_cs/__pycache__/

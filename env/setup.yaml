@@ -15,3 +15,6 @@ dependencies:
       - comet-ml
       - tqdm
       - sentence-transformers
+      - lingam
+      - dowhy
+      - econml

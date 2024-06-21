@@ -84,7 +84,41 @@ To train the models to learn the domains, simply run the script `2_2_train_domai
 
 ### 3. Carry out causal learning
 
-(causal learning here)
+With the domains learned and the semantic encoders trained, the next step is to carry out causal inference to identify the effect matrix for reasoning over the semantic representations.
+
+#### Preparing the data
+
+Causal learning tasks are performed on a dataset of semantic representations (conceptual space coordinates) and task variables. To avoid having to repeatedly use the semantic encoders, they are used one time to create this dataset that is then used for the downstream steps.
+
+##### Build the general dataset
+
+To create the causal training and test dataset, run the script `3_1_build_general_dataset.py`. This script uses the semantic encoders to map the 10000-sample set (not seen during training of the semantic encoders) and the 2630-sample test set to the conceptual space, and saves this data and the labels to a `.csv` file using `pandas`.
+
+##### Build the specific datasets
+
+The experiments here use specific parts of the general dataset created above. Specifically, the semantic data/task combinations examined are:
+
+- Shape classification task; shape/color semantic data
+- Color classification task; shape/color semantic data
+- "Is speed limit sign?" binary classification task; shape/color/symbol data
+
+To create these specific datasets, run the script `3_2_build_specific_datasets.py`. This script takes the data in the general set and transforms it to the specific datasets listed above.
+
+#### Causal discovery
+
+With the datasets created, the first step of obtaining the causal relationships is *causal discovery*, or estimating which relationships are present in the causal graph. This is done using the DirectLiNGAM method from the `lingam` package.
+
+To estimate the causal graphs for the datasets, run the script `3_3_causal_discovery.py`. This script implements the DirectLiNGAM algorithm and prints out the adjacency matrix corresponding to the estimated graphs. Optionally, the variables `SAVE_PLOTS`, `SHOW_PLOTS`, and `VERBOSE` can be set to `True` to save/show some informative plots or print extra information during execution.
+
+> *Note*: to use these graphs in subsequent steps, they are manually copied to the module `causal_cs.graphs`. This is already done for the graphs used in the paper; to use new graphs these need to be manually copied over to the module.
+
+#### Causal inference
+
+Once the causal graphs have been estimated, the remaining steps of causal inference can be implemented. The result of causal inference will be used in the SCCS-R system for reasoning over the semantic representations.
+
+To estimate the causal effects for the relationships identified in the previous step, run the script `3_4_causal_inference.py`. This script identifies the causal estimand given the graph and implements the DML method for estimating causal effects, as well as refutation tests, using the DoWhy package. The results are printed.
+
+> *Note*: to use these matrices in subsequent steps, they are manually copied to the module `causal_cs.matrices`. This is already done for the effect matrices used in the paper; to use new matrices these need to be manually copied over to the module.
 
 ### 4. Train the semantic decoder
 
