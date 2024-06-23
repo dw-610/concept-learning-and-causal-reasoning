@@ -28,11 +28,17 @@ def main(treatment, outcome, task):
 
     # --- constants ---
 
-    which_data      = 'sc'
     which_label     = task
 
     data_dir        = 'local/causal_data/'
-    data_file       = f'trn_shapes-colors_{which_label}.csv'
+    if task in ['shapes', 'colors']:
+        which_data      = 'sc'
+        data_file       = f'trn_shapes-colors_{which_label}.csv'
+    elif task == 'isSpeedLimit':
+        which_data      = 'scy'
+        data_file       = f'trn_shapes-colors-symbols_{which_label}.csv'
+    else:
+        raise ValueError(f'Invalid task: {task}')
 
     SHOW_GRAPH      = False
     SHOW_ESTIMAND   = False
@@ -164,7 +170,6 @@ if __name__ == '__main__':
         ss_p_val_mat  = np.zeros((len(DATA_VARS), len(TASK_VARS)))
         for i, treatment in enumerate(DATA_VARS):
             for j, outcome in enumerate(TASK_VARS):
-                if i == j: continue
                 print(f'Task: {task}, treatment: {treatment}, outcome: {outcome}')
                 effect, effects, refute_effects, passed_refutes, refute_p_vals = main(
                     treatment=treatment, outcome=outcome, task=task)
@@ -190,5 +195,45 @@ if __name__ == '__main__':
         print(ss_refute_mat)
         print('Subset p-value matrix:')
         print(ss_p_val_mat)
+
+    TASK = 'isSpeedLimit'
+    DATA_VARS = ['s0', 's1', 'c0', 'c1', 'c2', 'y0', 'y1', 'y2', 'y3', 'y4',
+                 'y5', 'y6', 'y7', 'y8', 'y9', 'y10', 'y11', 'y12', 'y13', 'y14']
+    TASK_VAR = ['u']
+
+    effect_mat = np.zeros((len(DATA_VARS), len(TASK_VAR)))
+    cc_passed_mat = np.zeros((len(DATA_VARS), len(TASK_VAR)))
+    cc_refute_mat = np.zeros((len(DATA_VARS), len(TASK_VAR)))
+    cc_p_val_mat  = np.zeros((len(DATA_VARS), len(TASK_VAR)))
+    ss_passed_mat = np.zeros((len(DATA_VARS), len(TASK_VAR)))
+    ss_refute_mat = np.zeros((len(DATA_VARS), len(TASK_VAR)))
+    ss_p_val_mat  = np.zeros((len(DATA_VARS), len(TASK_VAR)))
+    for i, treatment in enumerate(DATA_VARS):
+        for j, outcome in enumerate(TASK_VAR):
+            print(f'Task: {TASK}, treatment: {treatment}, outcome: {outcome}')
+            effect, effects, refute_effects, passed_refutes, refute_p_vals = main(
+                treatment=treatment, outcome=outcome, task=TASK)
+            effect_mat[i, j] = effect if effect is not None else np.nan
+            cc_passed_mat[i, j] = passed_refutes['common_cause'] if passed_refutes is not None else np.nan
+            cc_refute_mat[i, j] = refute_effects['common_cause'] if refute_effects is not None else np.nan
+            cc_p_val_mat[i, j] = refute_p_vals['common_cause'] if refute_p_vals is not None else np.nan
+            ss_passed_mat[i, j] = passed_refutes['subset'] if passed_refutes is not None else np.nan
+            ss_refute_mat[i, j] = refute_effects['subset'] if refute_effects is not None else np.nan
+            ss_p_val_mat[i, j] = refute_p_vals['subset'] if refute_p_vals is not None else np.nan
+    print(f'\nTask: {TASK}')
+    print('Effect matrix:')
+    print(effect_mat)
+    print('Common cause passed matrix:')
+    print(cc_passed_mat)
+    print('Common cause refute matrix:')
+    print(cc_refute_mat)
+    print('Common cause p-value matrix:')
+    print(cc_p_val_mat)
+    print('Subset passed matrix:')
+    print(ss_passed_mat)
+    print('Subset refute matrix:')
+    print(ss_refute_mat)
+    print('Subset p-value matrix:')
+    print(ss_p_val_mat)
 
 # ------------------------------------------------------------------------------
