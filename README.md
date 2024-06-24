@@ -8,10 +8,11 @@ The project experimental results can be recreated using the code in this reposit
 
 > *Note*: if planning to train the model on a GPU with CUDA, be sure all required software is installed before setting up the environment. See the documented software requirements [here](https://www.tensorflow.org/install/pip#software_requirements).
 
-An Anaconda environment was created to carry out the experiments. This environment can be created using the file `env/setup.yaml`. First, be sure to [install Anaconda](https://docs.anaconda.com/anaconda/install/). Then open a terminal and navigate to the `env/` subdirectory in this repository and run the command:
+An Anaconda environment was created to carry out the experiments. This environment can be created using the `env/env_setup.sh` shell script. First, be sure to [install Anaconda](https://docs.anaconda.com/anaconda/install/). Then open a terminal and navigate to the `env/` subdirectory in this repository and run the commands:
 
 ```bash
-conda env create -f setup.yaml
+chmod u+x env_setup.sh
+./env_setup.sh
 ```
 
 Once the environment has been created, to activate it run the command:
