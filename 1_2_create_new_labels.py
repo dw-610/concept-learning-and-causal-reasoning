@@ -6,6 +6,7 @@ the label_maps.py module.
 # ------------------------------------------------------------------------------
 # imports
 
+import os
 import numpy as np
 import modules.pipeline as pipe
 from modules.label_maps import maps
@@ -13,6 +14,9 @@ from modules.label_maps import maps
 # ------------------------------------------------------------------------------
 
 def main(identifier):
+
+    if not os.path.exists('local/memmap_data'):
+        os.makedirs('local/memmap_data')
 
     label_map = maps[identifier]
 

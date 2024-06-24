@@ -19,6 +19,7 @@ data sample in the range of -20 to 20 dB.
 # ------------------------------------------------------------------------------
 # imports
 
+import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -51,6 +52,9 @@ def main(task: str, multiplier: int = 10):
         DATA_FILE   = f'trn_shapes-colors-symbols_{task}.csv'
     else:
         raise ValueError(f'Invalid task! Got {task}')
+    
+    if not os.path.exists(DATA_DIR + SAVE_SUBDIR):
+        os.makedirs(DATA_DIR + SAVE_SUBDIR)
 
     # --- load and format data ---
 

@@ -5,6 +5,7 @@ This script will evaluate an already trained domain learner.
 # ------------------------------------------------------------------------------
 # imports
 
+import os
 import numpy as np
 import keras.backend as K
 
@@ -15,6 +16,9 @@ from modules.cslearn.controllers import ImageLearningController
 def main(domain: str):
 
     figpath = 'local/figures/'
+
+    if not os.path.exists(figpath):
+        os.makedirs(figpath)
 
     TRAIN_SET_SIZE: int     = 39209
     VALID_SET_SIZE: int     = 2630

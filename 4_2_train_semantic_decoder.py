@@ -5,6 +5,7 @@ This script trains the semantic decoder for the SCCS-R system.
 # ------------------------------------------------------------------------------
 # imports
 
+import os
 import numpy as np
 import tensorflow as tf
 
@@ -22,6 +23,9 @@ def main(task: str):
     BATCH_SIZE      = 64
 
     SAVE_DIR        = 'local/models/decoders/'
+
+    if not os.path.exists(SAVE_DIR):
+        os.makedirs(SAVE_DIR)
 
     if task in ['shapes', 'colors']:
         N_DIMS = 5

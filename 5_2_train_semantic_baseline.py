@@ -6,18 +6,9 @@ proposed SCCS-R system.
 # ------------------------------------------------------------------------------
 # imports
 
-import tensorflow as tf
-gpus = tf.config.experimental.list_physical_devices('GPU')
-if gpus:
-    try:
-        # Limit GPU memory to 4GB
-        tf.config.experimental.set_virtual_device_configuration(
-            gpus[0],
-            [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4000)])
-    except RuntimeError as e:
-        print(e)
-
+import os
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from modules.e2e_baseline import EndToEndSemanticModel
@@ -56,6 +47,9 @@ def main(latent_dim: int, mod_type: str):
     SCH_WARMUP_STEPS: int   = STEPS_PER_EPOCH * SCH_WARMUP_EPOCHS
     SCH_TARGET: float       = 1e-3
     SCH_DECAY_STEPS: int    = STEPS_PER_EPOCH * (EPOCHS - SCH_WARMUP_EPOCHS)
+
+    if not os.path.exists('local/models/end_to_end'):
+        os.makedirs('local/models/end_to_end')
 
     # --- load in the data ---
 

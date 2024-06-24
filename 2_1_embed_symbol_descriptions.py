@@ -8,6 +8,7 @@ These embeddings are saved for later use when learning the symbol domain.
 # ------------------------------------------------------------------------------
 # imports
 
+import os
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import matplotlib.pyplot as plt
@@ -17,6 +18,9 @@ from modules.symbol_descriptions import descriptions
 
 def main():
 
+    if not os.path.exists('local/models'):
+        os.makedirs('local/models')
+        
     SAVE_PATH = 'local/models/symbol_embeddings.npy'
     DESCRIPTIONS = list(descriptions.values())
 
