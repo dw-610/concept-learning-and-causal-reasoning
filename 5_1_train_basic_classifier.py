@@ -109,7 +109,7 @@ def main(task: str):
         steps_per_epoch=STEPS_PER_EPOCH
     )
 
-    ctrl.model.save(f'local/models/classifiers/{task}_image_classifier.keras')
+    ctrl.model.save(f'local/models/classifiers/{task}.keras')
 
 # ------------------------------------------------------------------------------
 

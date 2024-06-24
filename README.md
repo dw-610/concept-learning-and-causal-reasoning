@@ -161,4 +161,22 @@ To train these models, run the script `5_2_train_semantic_baseline.py`.
 
 ### 6. Perform wireless simulations
 
-(wireless simulation here)
+A few different simulations are carried out to evaluate the proposed system compared to the various baseline systems.
+
+#### Efficacy of reasoning
+
+To evaluate the effect of including the reasoning module, the proposed SCCS-R system is simulated with reasoning and with random semantic modification, where random semantic representations are dropped instead of the least important values.
+
+To perform this simulation, run the script `6_1_sim_reasoning.py`. This script simulates the system over the test set with and without reasoning for the various tasks, and saves plots of the task accuracy vs. SNR to the `local/figures/simulations/` subdirectory.
+
+#### Impact of message length
+
+To evaluate the effect of the message length (how many semantic representation values are actually sent, after reasoning), the proposed SCCS-R system is again compared to a system with "random" reasoning.
+
+To perform this simulation, run the script `6_2_sim_message_length.py`. This script simulates the system over the test set with and without reasoning for the various tasks, and saves plots of the task accuracy vs. message length to the `local/figures/simulations/` subdirectory.
+
+#### Baseline comparison
+
+To evaluate the performance of the proposed system, it is compared to various baselines as described above.
+
+To perform this simulation, run the script `6_3_sim_compare_baselines.py`. This script simulates the proposed and baseline systems over the test set for the various tasks, and saves plots of the task accuracy vs. SNR to the `local/figures/simulations/` subdirectory.

@@ -134,25 +134,27 @@ sc_colors_refutation = {
 # ------------------------------------------------------------------------------
 
 scy_isSpeedLimit = np.array([
-    [-0.00946774]
-    [-0.33404416]
-    [ 0.0773    ]
-    [ 0.06678311]
-    [-0.25745979]
-    [-0.1446523 ]
-    [     np.nan]
-    [ 0.17604331]
-    [-0.11043592]
-    [-0.15747794]
-    [ 0.19017016]
-    [ 0.11644017]
-    [-0.20008149]
-    [-0.28569099]
-    [-0.22415035]
-    [-0.45612573]
-    [ 0.26346273]
-    [ 0.3456488 ]
-    [-0.51518297]
+    [-0.00946774],
+    [-0.33404416],
+
+    [ 0.0773    ],
+    [ 0.06678311],
+    [-0.25745979],
+
+    [-0.1446523 ],
+    [     np.nan],
+    [ 0.17604331],
+    [-0.11043592],
+    [-0.15747794],
+    [ 0.19017016],
+    [ 0.11644017],
+    [-0.20008149],
+    [-0.28569099],
+    [-0.22415035],
+    [-0.45612573],
+    [ 0.26346273],
+    [ 0.3456488 ],
+    [-0.51518297],
     [ 0.1903332 ]
 ])
 
@@ -160,9 +162,11 @@ scy_isSpeedLimit_refutation = {
     'common_cause_passed': np.array([
         [ 1.],
         [ 0.],
+
         [ 1.],
         [ 1.],
         [ 1.],
+
         [ 1.],
         [ np.nan],
         [ 1.],
@@ -296,7 +300,7 @@ scy_isSpeedLimit_refutation = {
 mats = {
     'sc_shapes': sc_shapes,
     'sc_colors': sc_colors,
-    'scy_isSpeedLimit_lingam': scy_isSpeedLimit,
+    'scy_isSpeedLimit': scy_isSpeedLimit,
 }
 """
 Dictionary of effect matrices.
@@ -309,13 +313,9 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     mats = {
-        # 'sc_shapes_hand': sc_shapes_hand,
-        # 'sc_shapes_modpc': sc_shapes_modpc,
-        # 'sc_shapes_full': sc_shapes_full,
-        # 'sc_colors_hand': sc_colors_hand,
-        # 'sc_colors_modpc': sc_colors_modpc,
-        # 'sc_colors_full': sc_colors_full,
-        'scy_isSpeedLimit_lingam': scy_isSpeedLimit_lingam,
+        'sc_shapes': sc_shapes,
+        'sc_colors': sc_colors,
+        'scy_isSpeedLimit': scy_isSpeedLimit,
     }
     
     # xlabels = ['u0', 'u1', 'u2', 'u3']
