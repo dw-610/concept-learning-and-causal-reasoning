@@ -86,7 +86,7 @@ To train the models to learn the domains, simply run the script `2_2_train_domai
 
 With the domains learned and the semantic encoders trained, the next step is to carry out causal inference to identify the effect matrix for reasoning over the semantic representations.
 
-#### Preparing the data
+#### Prepare the causal dataset
 
 Causal learning tasks are performed on a dataset of semantic representations (conceptual space coordinates) and task variables. To avoid having to repeatedly use the semantic encoders, they are used one time to create this dataset that is then used for the downstream steps.
 
@@ -122,19 +122,42 @@ To estimate the causal effects for the relationships identified in the previous 
 
 ### 4. Train the semantic decoder
 
-(decoder training here)
+The semantic decoder module takes the received, modified semantic representations and maps them to some task variable. In these experiments, the task variables are 1-hot encoded vectors corresponding to classification tasks.
+
+#### Prepare the decoder dataset
+
+To generate the decoder dataset, semantic representations (outputs of the semantic encoders) are modified and transmitted over a simulated channel. Random modifications are applied instead of true reasoning to generate the dataset used for training the semantic decoder. The physical communication parameters can be chosen while generating the dataset.
+
+To build this dataset, run the script `4_1_build_decoder_dataset.py`, which implements the process described above and saves the datasets for each task to the `local/decoder_data/` subdirectory.
+
+#### Train the models
+
+Once the datasets have been built, run the script `4_2_train_semantic_decoder.py` to train the semantic decoder for each task. This script implements supervised learning on a custom model (defined in the `causal_cs.decoder` module) to train the decoder. The decoder models are saved to the `local/models/decoders` subdirectory.
 
 ### 5. Prepare the baseline models
 
-(baseline models here)
+Three baseline systems are implemented for comparison:
 
-#### Basic classifier models
+- traditional system transmitting the entire image and performing classification at the receiver (technical)
+- goal-oriented system performing classification at the transmitter and sending the result (effective)
+- multitask semantic system trained end-to-end to encode the raw data and perform the tasks at the receivers
 
-(basic classifier training here)
+To implement these baselines, we need to train a few additional models:
+
+- basic image classifier for the technical and effective baselines
+- encoder and decoder models for the end-to-end semantic baseline
+
+#### Basic classifier model
+
+The basic classifier model takes in an image as input and outputs the predicted class. This model is trained using the same 39209-sample dataset used to train the semantic encoders in [step 2](#2-learn-the-domains).
+
+To train the classifier model for each task, run the script `5_1_train_basic_classifier.py`. This will create and train the models, and save them to the `local/models/classifiers/` subdirectory.
 
 #### End-to-end semantic models
 
-(end-to-end semantic model training here)
+The end-to-end semantic baseline implements custom models to first map the raw data to symbols that are transmitted over the channel, and then decode the received signals to perform the task(s). These models are jointly trained to simultaneously perform multiple tasks.
+
+To train these models, run the script `5_2_train_semantic_baseline.py`.
 
 ### 6. Perform wireless simulations
 

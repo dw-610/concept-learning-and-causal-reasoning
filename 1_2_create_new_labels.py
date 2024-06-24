@@ -58,7 +58,10 @@ def main(identifier):
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    main('shapes')
-    main('colors')
+
+    TASKS = ['shapes', 'colors', 'isSpeedLimit']
+    
+    for task in TASKS:
+        main(task)
 
 # ------------------------------------------------------------------------------
