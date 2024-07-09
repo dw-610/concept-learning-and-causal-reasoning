@@ -18,7 +18,7 @@ def main(task: str):
     DEBUG           = False
     DATA_DIR        = 'local/decoder_data/'
     MASK_VALUE      = 25.0
-    EPOCHS          = 75
+    EPOCHS          = 100
     LEARNING_RATE   = 1e-3
     BATCH_SIZE      = 64
 

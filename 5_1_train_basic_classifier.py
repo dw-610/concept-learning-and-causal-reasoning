@@ -115,7 +115,7 @@ def main(task: str):
 
 if __name__ == '__main__':
 
-    TASKS = ['isSpeedLimit']
+    TASKS = ['shapes', 'colors', 'isSpeedLimit']
 
     for task in TASKS:
         main(task)

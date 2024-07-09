@@ -89,7 +89,10 @@ def main(task: str, multiplier: int = 10):
             sample = sample.copy()
 
             # randomly set some values to NaN
-            msg_len = np.random.randint(1, n_dims+1)
+            if task in ['shapes', 'colors']:
+                msg_len = np.random.randint(1, n_dims+1)
+            elif task == 'isSpeedLimit':
+                msg_len = np.random.randint(10, n_dims+1)
             nan_idx = np.random.choice(n_dims, n_dims-msg_len, replace=False)
             sample[nan_idx] = np.nan
 

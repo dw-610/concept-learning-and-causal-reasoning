@@ -15,7 +15,7 @@ from modules.e2e_baseline import EndToEndSemanticModel
 
 # ------------------------------------------------------------------------------
 
-def main(latent_dim: int, mod_type: str):
+def main(latent_dim: int, mod_type: str, channel: str):
 
     TASKS       = ['shapes', 'colors', 'isSpeedLimit']
 
@@ -66,7 +66,7 @@ def main(latent_dim: int, mod_type: str):
     # --- instantiate the model ---
 
     model = EndToEndSemanticModel(TASKS, latent_dim, N_CLASSES, N_DECODERS, 
-                                  STOCH_BIN, mod_type, CODE_RATE)
+                                  STOCH_BIN, mod_type, CODE_RATE, channel)
     model(images[:10])
     model.summary()
 
@@ -101,11 +101,11 @@ def main(latent_dim: int, mod_type: str):
     # --- save the models ---
 
     model.encoder.save(
-        f'local/models/end_to_end/len{latent_dim}_{mod_type}_encoder.keras')
+        f'local/models/end_to_end/len{latent_dim}_{mod_type}_{channel}_encoder.keras')
     for i in range(N_DECODERS):
         if TASKS[i] in model.decoders[i].name:
             model.decoders[i].save(
-                f'local/models/end_to_end/{TASKS[i]}_len{latent_dim}_{mod_type}_decoder.keras'
+                f'local/models/end_to_end/{TASKS[i]}_len{latent_dim}_{mod_type}_{channel}_decoder.keras'
             )
         else:
             raise ValueError('Model name mismatch!')
@@ -114,11 +114,12 @@ def main(latent_dim: int, mod_type: str):
 
 if __name__ == '__main__':
 
-    LATENT_DIMS = [2]
+    LATENT_DIMS = [10]
     MOD_TYPES   = ['BPSK']
+    CHANNELS    = ['awgn']
 
     for latent_dim in LATENT_DIMS:
-        for mod_type in MOD_TYPES:
-            main(latent_dim, mod_type)
+        for mod_type, channel in zip(MOD_TYPES, CHANNELS):
+            main(latent_dim, mod_type, channel)
 
 # ------------------------------------------------------------------------------
