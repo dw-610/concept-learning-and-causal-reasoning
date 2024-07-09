@@ -16,7 +16,8 @@ import modules.simulation as sim
 
 # ------------------------------------------------------------------------------
 
-def main():
+def main(task: str, n_sims: int, message_length: int, channel: str,
+         mod_type: str):
 
     SAVE_DIR    = 'local/figures/simulations/'
     if not os.path.exists(SAVE_DIR):
@@ -24,26 +25,22 @@ def main():
     
     # simulation params
     WHICH       = ['e2e', 'sccsr', 'eff', 'tech']
-    MOD_TYPE    = 'BPSK'
     CH_CODING   = False
     CODE_RATE   = '1/2'
     VITDEC_TYPE = 'soft'
     REASONING   = True
-    M_LENGTH    = 2
     Q_BITS      = 8
     Q_RANGE     = (-5, 5)
-    EFF_BITS    = Q_BITS * M_LENGTH
+    EFF_BITS    = Q_BITS * message_length
 
-    TASK        = 'colors'
-    N_SIMS      = 2630
-    SNRS        = np.linspace(-80, 20, 7)
+    SNRS        = np.linspace(-80, 40, 11)
 
-    if TASK in ['shapes', 'colors']:
-        EFF_MATRIX  = matrices.mats[f'sc_{TASK}']
-    elif TASK == 'isSpeedLimit':
+    if task in ['shapes', 'colors']:
+        EFF_MATRIX  = matrices.mats[f'sc_{task}']
+    elif task == 'isSpeedLimit':
         EFF_MATRIX  = matrices.mats['scy_isSpeedLimit']
     else:
-        raise ValueError(f'Invalid task! Got {TASK}')
+        raise ValueError(f'Invalid task! Got {task}')
     
     # plotting params
     FIG_SIZE        = (3.5, 2.5)
@@ -65,31 +62,33 @@ def main():
 
     if 'sccsr' in WHICH:
         accs_sccsr, _ = sim.simulate_sccsr(
-            effect_matrix=EFF_MATRIX, number_sims=N_SIMS, snrs=SNRS, 
-            reasoning=REASONING, message_length=M_LENGTH, task=TASK,
-            modulation_type=MOD_TYPE, channel_coding=CH_CODING, 
+            effect_matrix=EFF_MATRIX, number_sims=n_sims, snrs=SNRS, 
+            reasoning=REASONING, message_length=message_length, task=task,
+            modulation_type=mod_type, channel_coding=CH_CODING, 
             code_rate=CODE_RATE, vitdec_type=VITDEC_TYPE, quant_bits=Q_BITS, 
-            quant_range=Q_RANGE)
+            quant_range=Q_RANGE, channel=channel)
         keras.backend.clear_session()
 
     if 'tech' in WHICH:
         accs_tech, _ = sim.simulate_technical(
-            number_sims=N_SIMS, snrs=SNRS, task=TASK, modulation_type=MOD_TYPE,
+            number_sims=n_sims, snrs=SNRS, task=task, modulation_type=mod_type,
             channel_coding=CH_CODING, code_rate=CODE_RATE, 
-            vitdec_type=VITDEC_TYPE, quant_bits=Q_BITS, quant_range=Q_RANGE)
+            vitdec_type=VITDEC_TYPE, quant_bits=Q_BITS, quant_range=Q_RANGE,
+            channel=channel)
         keras.backend.clear_session()
 
     if 'eff' in WHICH:
         accs_eff, _ = sim.simulate_effective(
-            number_sims=N_SIMS, snrs=SNRS, task=TASK, modulation_type=MOD_TYPE,
+            number_sims=n_sims, snrs=SNRS, task=task, modulation_type=mod_type,
             channel_coding=CH_CODING, code_rate=CODE_RATE, 
-            vitdec_type=VITDEC_TYPE, code_bits=EFF_BITS)
+            vitdec_type=VITDEC_TYPE, code_bits=EFF_BITS, channel=channel)
         keras.backend.clear_session()
     
     if 'e2e' in WHICH:
         accs_e2e = sim.simulate_end_to_end(
-            number_sims=N_SIMS, snrs=SNRS, task=TASK, message_length=M_LENGTH,
-            modulation_type=MOD_TYPE)
+            number_sims=n_sims, snrs=SNRS, task=task, 
+            message_length=message_length, modulation_type=mod_type, 
+            channel=channel)
 
     # --- plot the results ---
 
@@ -114,11 +113,42 @@ def main():
     plt.tight_layout()
     plt.tick_params(axis='both', which='major', labelsize=LABEL_SIZE)
 
-    plt.savefig(f'local/figures/simulations/{TASK}_compare_all.pdf')
+    plt.savefig(f'local/figures/simulations/{task}_compare_all_{channel}_{mod_type}.pdf')
 
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    main()
+
+    N_SIMS = 1000
+
+    TASKS = ['shapes', 'colors']
+    CHANNELS = ['awgn']
+    MOD_TYPE = ['BPSK']
+    MESSAGE_LENGTH = 2
+
+    for task in TASKS:
+        for channel, mod_type in zip(CHANNELS, MOD_TYPE):
+            main(task, n_sims=N_SIMS, message_length=MESSAGE_LENGTH, 
+                 channel=channel, mod_type=mod_type)
+    
+    TASKS = ['isSpeedLimit']
+    CHANNELS = ['awgn']
+    MOD_TYPE = ['BPSK']
+    MESSAGE_LENGTH = 10
+
+    for task in TASKS:
+        for channel, mod_type in zip(CHANNELS, MOD_TYPE):
+            main(task, n_sims=N_SIMS, message_length=MESSAGE_LENGTH, 
+                 channel=channel, mod_type=mod_type)
+            
+    TASKS = ['shapes']
+    CHANNELS = ['rayleigh']
+    MOD_TYPE = ['16-QAM']
+    MESSAGE_LENGTH = 2
+
+    for task in TASKS:
+        for channel, mod_type in zip(CHANNELS, MOD_TYPE):
+            main(task, n_sims=N_SIMS, message_length=MESSAGE_LENGTH, 
+                 channel=channel, mod_type=mod_type)
 
 # ------------------------------------------------------------------------------
