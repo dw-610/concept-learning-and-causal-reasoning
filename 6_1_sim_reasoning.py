@@ -240,4 +240,50 @@ if __name__ == '__main__':
         
         plt.savefig(SAVE_DIR + f'/{task}_reasoning_efficacy.pdf')
 
+    TASKS = ['isSpeedLimit']
+    LENGTHS = list(range(7, 20, 4))
+
+    for task in TASKS:
+        print(f'\n ===== Task = {task} ===== \n')
+
+        plt.figure(figsize=FIG_SIZE, dpi=DPI)
+
+        for i, length in enumerate(LENGTHS):
+            print(f'\n --- Message length = {length} --- \n')
+
+            EBN0s, _, ACCs = main(task=task, reasoning=True, 
+                                  message_length=length)
+
+            plt.plot(EBN0s, ACCs, 
+                    marker=MARKERS[i], linestyle=R_LINESTYLE, color='blue', 
+                    markerfacecolor='none', linewidth=LINE_WIDTH, 
+                    markersize=MARKER_SIZE)
+            
+            EBN0s, _, ACCs = main(task=task, reasoning=False, 
+                                  message_length=length)
+            
+            plt.plot(EBN0s, ACCs, marker=MARKERS[i], linestyle=NO_R_LINESTYLE, 
+                     color='red', markerfacecolor='none',linewidth=LINE_WIDTH, 
+                     markersize=MARKER_SIZE)
+            
+        plt.xlabel('$E_b/N_0$ (dB)', fontsize=FONT_SIZE)
+        plt.ylabel('Accuracy', fontsize=FONT_SIZE)
+        plt.grid()
+        plt.tight_layout()
+        plt.tick_params(axis='both', which='major', labelsize=LABEL_SIZE)
+ 
+        # custom legend
+        custom_lines = [Line2D([0], [0], color='black', linestyle='', marker=mk, 
+                        markerfacecolor='none', 
+                        markersize=MARKER_SIZE) for mk in MARKERS]
+        custom_lines.append(Line2D([0], [0], color='blue', linestyle='', 
+                                   marker='s', markersize=MARKER_SIZE))
+        custom_lines.append(Line2D([0], [0], color='red', linestyle='', 
+                                   marker='s', markersize=MARKER_SIZE))
+        plt.legend(custom_lines, 
+                   [f'Length {i}' for i in range(7,20,4)]+['Reasoning', 'Random'], 
+                   fontsize='small', loc='upper left', ncol=1)
+        
+        plt.savefig(SAVE_DIR + f'/{task}_reasoning_efficacy.pdf')
+
 # ------------------------------------------------------------------------------
