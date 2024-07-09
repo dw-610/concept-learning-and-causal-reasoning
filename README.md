@@ -83,6 +83,8 @@ To obtain these embeddings, run the script `2_1_embed_symbol_descriptions.py`. T
 
 To train the models to learn the domains, simply run the script `2_2_train_domain_learners.py`. This script will load all of the data and perform domain learning for the three domains, saving the resulting models to the `local/models/` subdirectory.
 
+Optionally, the script `2_3_eval_domain_learner.py` can be run to produce some figures evaluating the quality of the learned domains.
+
 ### 3. Carry out causal learning
 
 With the domains learned and the semantic encoders trained, the next step is to carry out causal inference to identify the effect matrix for reasoning over the semantic representations.
@@ -158,7 +160,7 @@ To train the classifier model for each task, run the script `5_1_train_basic_cla
 
 The end-to-end semantic baseline implements custom models to first map the raw data to symbols that are transmitted over the channel, and then decode the received signals to perform the task(s). These models are jointly trained to simultaneously perform multiple tasks.
 
-To train these models, run the script `5_2_train_semantic_baseline.py`.
+To train these models, run `5_2_train_semantic_baseline.py`. This script initializes and trains the models and saves them to the `local/models/end_to_end/` subdirectory.
 
 ### 6. Perform wireless simulations
 
