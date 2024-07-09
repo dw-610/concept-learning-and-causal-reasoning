@@ -198,6 +198,93 @@ class ComplexAWGNLayer(layers.Layer):
         config = super(ComplexAWGNLayer, self).get_config()
         config.update({'variance': self.variance})
         return config
+    
+# ------------------------------------------------------------------------------
+
+class RayleighFadingLayer(layers.Layer):
+    """
+    Custom layer that simulates Rayleigh fading on the input data. The fading
+    is applied to the complex-valued input data, and is assumed to be flat.
+    """
+    def __init__(self, **kwargs):
+        super(RayleighFadingLayer, self).__init__(**kwargs)
+
+    def call(self, inputs, training=False):
+        coefs = tf.random.normal(shape=tf.shape(inputs), stddev=1/2**0.5)
+
+        idx = tf.range(0, tf.shape(inputs)[1], delta=2)
+        idx = tf.repeat(idx, 2)
+
+        t1 = tf.gather(inputs, idx, axis=1)
+        t2 = coefs
+
+        idx = tf.range(1, tf.shape(inputs)[1], delta=2)
+        idx = tf.repeat(idx, 2)
+        mask = tf.constant(
+            [-1 if not i % 2 == 1 else 1 for i in range(inputs.shape[1])],
+            dtype=tf.float32)
+
+        t3 = tf.multiply(tf.gather(inputs, idx, axis=1), mask)
+
+        idx = tf.range(tf.shape(inputs)[1])
+        idx = tf.reshape(idx, (-1, 2))
+        idx = tf.reverse(idx, axis=[1])
+        idx = tf.reshape(idx, (-1,))
+
+        t4 = tf.gather(coefs, idx, axis=1)
+
+        outputs = tf.multiply(t1, t2) + tf.multiply(t3, t4)
+
+        return outputs, coefs
+
+    def get_config(self):
+        return super(RayleighFadingLayer, self).get_config()
+    
+# ------------------------------------------------------------------------------
+
+class EqualizationLayer(layers.Layer):
+    """
+    Custom layer that performs equalization on the input data. The input data
+    should be complex-valued, with the real and imaginary parts corresponding
+    to the in-phase and quadrature components of the symbols. The fading
+    coefficients should also be provided.
+    """
+    def __init__(self, **kwargs):
+        super(EqualizationLayer, self).__init__(**kwargs)
+
+    def call(self, inputs, coefs):
+        
+        idx = tf.range(0, tf.shape(inputs)[1], delta=2)
+        idx = tf.repeat(idx, 2)
+
+        t1 = inputs
+        t2 = tf.gather(coefs, idx, axis=1)
+
+        idx = tf.range(tf.shape(inputs)[1])
+        idx = tf.reshape(idx, (-1, 2))
+        idx = tf.reverse(idx, axis=[1])
+        idx = tf.reshape(idx, (-1,))
+
+        t3 = tf.gather(inputs, idx, axis=1)
+
+        idx = tf.range(1, tf.shape(inputs)[1], delta=2)
+        idx = tf.repeat(idx, 2)
+
+        t4 = tf.gather(coefs, idx, axis=1)
+
+        mask = tf.constant(
+            [-1 if i % 2 == 1 else 1 for i in range(inputs.shape[1])],
+            dtype=tf.float32)
+        
+        outputs = tf.divide(
+            tf.multiply(t1, t2) + tf.multiply(tf.multiply(t3, t4), mask),
+            tf.multiply(t2, t2) + tf.multiply(t4, t4)
+        )
+
+        return outputs
+    
+    def get_config(self):
+        return super(EqualizationLayer, self).get_config()
 
 # ------------------------------------------------------------------------------
 
@@ -252,7 +339,8 @@ class EndToEndSemanticModel(models.Model):
             n_decoders: int = 1,
             stoch_binarization: bool = True,
             mod_type: str = 'BPSK',
-            code_rate: float = 0.5
+            code_rate: float = 0.5,
+            channel: str = 'awgn'
         ):
         """
         Constructor for the EndToEndSemanticModel class.
@@ -280,8 +368,9 @@ class EndToEndSemanticModel(models.Model):
             The "code rate" of the system. Will expand the latent dimension by
             the whole-number inverse of this factor to get the encoder output.
             Default is 0.5.
-        tasks : list
-            The tasks to perform with the decoders. 
+        channel : str
+            The channel type to use. Options are 'awgn' and 'rayleigh'.
+            Default is 'awgn'.
         """
         super(EndToEndSemanticModel, self).__init__()
 
@@ -307,14 +396,45 @@ class EndToEndSemanticModel(models.Model):
             latent_dim, code_rate, stoch_binarization)
 
         if mod_type == 'BPSK':
+
+            self.modulator = None
+
+            if channel == 'awgn':
+                self.fade = None
+            elif channel == 'rayleigh':
+                self.fade = RayleighFadingLayer()
+            else:
+                raise ValueError('Invalid channel type.')
+            
             self.awgn = AWGNLayer()
+
+            if channel == 'awgn':
+                self.equalizer = None
+            elif channel == 'rayleigh':
+                self.equalizer = EqualizationLayer()
+
             self.decoders = []
             for task, n in zip(tasks, n_classes):
                 self.decoders.append(get_decoder_model(task, expanded_dim, n))
-            self.modulator = None
+
         elif mod_type == '16-QAM':
+
             self.modulator = QAM16ModulationLayer()
+
+            if channel == 'awgn':
+                self.fade = None
+            elif channel == 'rayleigh':
+                self.fade = RayleighFadingLayer()
+            else:
+                raise ValueError('Invalid channel type.')
+            
             self.awgn = ComplexAWGNLayer()
+
+            if channel == 'awgn':
+                self.equalizer = None
+            elif channel == 'rayleigh':
+                self.equalizer = EqualizationLayer()
+
             if n_decoders == 1:
                 self.decoder = get_decoder_model(
                     tasks, int(expanded_dim/2), n_classes)
@@ -323,6 +443,7 @@ class EndToEndSemanticModel(models.Model):
                 for tasks, n in zip(tasks, n_classes):
                     self.decoders.append(get_decoder_model(
                         tasks, int(expanded_dim/2), n))
+                    
         else:
             raise ValueError('Invalid modulation type.')
         
@@ -331,9 +452,17 @@ class EndToEndSemanticModel(models.Model):
 
         if self.modulator is not None:
             x = self.modulator(x)
+            if self.fade is not None:
+                x, coefs = self.fade(x, training=training)
             x = self.awgn(x, training=training)
+            if self.equalizer is not None:
+                x = self.equalizer(x, coefs)
         else:
+            if self.fade is not None:
+                x, coefs = self.fade(x, training=training)
             x = self.awgn(x, training=training)
+            if self.equalizer is not None:
+                x = self.equalizer(x, coefs)
 
         if self._n_decoders == 1:
             return self.decoder(x)

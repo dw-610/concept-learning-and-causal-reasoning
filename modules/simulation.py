@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 
 from modules.comms.wifi_phy import PHY
-from modules.comms.channels import AWGN
+from modules.comms.channels import AWGN, Rayleigh
 from modules.comms.quantizer import Quantizer
 from modules.comms.linear_block_code import M2LinearBlockCode
 
@@ -30,7 +30,7 @@ def simulate_sccsr(effect_matrix: np.ndarray, number_sims: int = 500,
                    task: str = 'shapes', modulation_type: str = 'BPSK',
                    channel_coding: bool = False, code_rate: str = '1/2',
                    vitdec_type: str = 'soft', quant_bits: int = 32,
-                   quant_range: tuple = (-5, 5)
+                   quant_range: tuple = (-5, 5), channel: str = 'awgn'
                 ):
     """
     This function simulates the SCCS-R system.
@@ -72,6 +72,9 @@ def simulate_sccsr(effect_matrix: np.ndarray, number_sims: int = 500,
     quant_range : tuple
         The range of values to quantize to.
         Default is (-5, 5).
+    channel : str
+        The channel to use. Options are 'awgn' and 'rayleigh'.
+        Default is 'awgn'.
     """
     
     # --- constants ---
@@ -80,12 +83,19 @@ def simulate_sccsr(effect_matrix: np.ndarray, number_sims: int = 500,
     if task in ['shapes', 'colors']:
         DATA_FILE   = f'tst_shapes-colors_{task}.csv'
     elif task == 'isSpeedLimit':
-        DATA_FILE   = f'tst_shapes-colors-symbols_{task}_10D.csv'
+        DATA_FILE   = f'tst_shapes-colors-symbols_{task}.csv'
 
     MODELS_DIR  = 'local/models/decoders/'
     MODEL_NAME  = f'{task}.keras'
 
     EB          = 1.0
+
+    if channel == 'awgn':
+        FADING = False
+    elif channel == 'rayleigh':
+        FADING = True
+    else:
+        raise ValueError(f'Invalid channel! Got {channel}')
 
     # --- load and format data ---
 
@@ -114,7 +124,6 @@ def simulate_sccsr(effect_matrix: np.ndarray, number_sims: int = 500,
     # --- simulate the system ---
 
     bers = np.empty(snrs.shape, dtype=np.float32)
-    stds = np.empty(snrs.shape, dtype=np.float32)
     accs = np.empty(snrs.shape, dtype=np.float32)
 
     sim_idx = np.random.choice(n_samples, number_sims, replace=False)
@@ -123,7 +132,10 @@ def simulate_sccsr(effect_matrix: np.ndarray, number_sims: int = 500,
 
         N0 = EB / 10**(EBN0/10)
         std = np.sqrt(N0/2)
-        channel = AWGN(standard_dev=std)
+        if FADING:
+            channel = Rayleigh(awgn_std=std)
+        else:
+            channel = AWGN(standard_dev=std)
 
         rx_samples = np.empty((number_sims, n_dims), dtype=np.float32)
         bit_errors = 0
@@ -151,17 +163,25 @@ def simulate_sccsr(effect_matrix: np.ndarray, number_sims: int = 500,
             else:
                 tx_bits = data_bits
             tx_symbols = phy.qam_modulate(tx_bits)
-            if modulation_type == 'BPSK':
-                rx_symbols = channel.add_real_noise(tx_symbols)
+            if FADING:
+                fade_symbols, fade_coefs = channel.fade_signal(tx_symbols)
             else:
-                rx_symbols = channel.add_complex_noise(tx_symbols)
+                fade_symbols = tx_symbols
+            if modulation_type == 'BPSK':
+                rx_symbols = channel.add_real_noise(fade_symbols)
+            else:
+                rx_symbols = channel.add_complex_noise(fade_symbols)
+            if FADING:
+                eq_symbols = np.divide(rx_symbols, fade_coefs)
+            else:
+                eq_symbols = rx_symbols
             if channel_coding and vitdec_type == 'soft':
-                rx_data_bits = phy.viterbi_decode(rx_symbols, dec_type='soft')
+                rx_data_bits = phy.viterbi_decode(eq_symbols, dec_type='soft')
             elif channel_coding and vitdec_type == 'hard':
-                rx_bits = phy.qam_demodulate(rx_symbols)
+                rx_bits = phy.qam_demodulate(eq_symbols)
                 rx_data_bits = phy.viterbi_decode(rx_bits, dec_type='hard')
             else:
-                rx_data_bits = phy.qam_demodulate(rx_symbols)
+                rx_data_bits = phy.qam_demodulate(eq_symbols)
 
             # convert the received bits to floats (filling in NaN values)
             rx_sample = np.empty((n_dims,), dtype=np.float32)
@@ -208,7 +228,7 @@ def simulate_technical(number_sims: int = 500,
                        task: str = 'shapes', modulation_type: str = 'BPSK',
                        channel_coding: bool = False, code_rate: str = '1/2',
                        vitdec_type: str = 'soft', quant_bits: int = 32,
-                       quant_range: tuple = (-5, 5)
+                       quant_range: tuple = (-5, 5), channel: str = 'awgn'
                     ):
     """
     This function simulates the technical system.
@@ -242,6 +262,9 @@ def simulate_technical(number_sims: int = 500,
     quant_range : tuple
         The range of values to quantize to.
         Default is (-5, 5).
+    channel : str
+        The channel to use. Options are 'awgn' and 'rayleigh'.
+        Default is 'awgn'.
     """
 
     # --- constants ---
@@ -259,6 +282,13 @@ def simulate_technical(number_sims: int = 500,
     labels_path = f'local/memmap_data/signs_tst_labels_{task}.npy'
 
     EB          = 1.0
+
+    if channel == 'awgn':
+        FADING = False
+    elif channel == 'rayleigh':
+        FADING = True
+    else:
+        raise ValueError(f'Invalid channel! Got {channel}')
 
     # --- load data ---
 
@@ -285,7 +315,10 @@ def simulate_technical(number_sims: int = 500,
 
         N0 = EB / 10**(EBN0/10)
         std = np.sqrt(N0/2)
-        channel = AWGN(standard_dev=std)
+        if FADING:
+            channel = Rayleigh(awgn_std=std)
+        else:
+            channel = AWGN(standard_dev=std)
 
         rx_images = np.empty(images[:number_sims].shape, dtype=np.float32)
         bit_errors = 0
@@ -307,17 +340,25 @@ def simulate_technical(number_sims: int = 500,
             else:
                 tx_bits = data_bits
             tx_symbols = phy.qam_modulate(tx_bits)
-            if modulation_type == 'BPSK':
-                rx_symbols = channel.add_real_noise(tx_symbols)
+            if FADING:
+                fade_symbols, fade_coefs = channel.fade_signal(tx_symbols)
             else:
-                rx_symbols = channel.add_complex_noise(tx_symbols)
+                fade_symbols = tx_symbols
+            if modulation_type == 'BPSK':
+                rx_symbols = channel.add_real_noise(fade_symbols)
+            else:
+                rx_symbols = channel.add_complex_noise(fade_symbols)
+            if FADING:
+                eq_symbols = np.divide(rx_symbols, fade_coefs)
+            else:
+                eq_symbols = rx_symbols
             if channel_coding and vitdec_type == 'soft':
-                rx_data_bits = phy.viterbi_decode(rx_symbols, dec_type='soft')
+                rx_data_bits = phy.viterbi_decode(eq_symbols, dec_type='soft')
             elif channel_coding and vitdec_type == 'hard':
-                rx_bits = phy.qam_demodulate(rx_symbols)
+                rx_bits = phy.qam_demodulate(eq_symbols)
                 rx_data_bits = phy.viterbi_decode(rx_bits, dec_type='hard')
             else:
-                rx_data_bits = phy.qam_demodulate(rx_symbols)
+                rx_data_bits = phy.qam_demodulate(eq_symbols)
 
             # convert the received bits to floats (filling in NaN values)
             rx_floats = np.empty((3*IM_SIZE**2,), dtype=np.float32)
@@ -364,7 +405,8 @@ def simulate_effective(number_sims: int = 500,
                        snrs: np.ndarray = np.linspace(-20, 20, 7),
                        task: str = 'shapes', modulation_type: str = 'BPSK',
                        channel_coding: bool = False, code_rate: str = '1/2',
-                       vitdec_type: str = 'soft', code_bits: int = 32):
+                       vitdec_type: str = 'soft', code_bits: int = 32,
+                       channel: str = 'awgn'):
     """
     This function simulates the effective system.
 
@@ -391,9 +433,12 @@ def simulate_effective(number_sims: int = 500,
     vitdec_type : str
         The type of Viterbi decoder to use. Only used if channel_coding is True.
         Default is 'soft'.
-    quant_bits : int
-        The number of bits to use for quantization.
+    code_bits : int
+        The number of bits to use for the code.
         Default is 32.
+    channel : str
+        The channel to use. Options are 'awgn' and 'rayleigh'.
+        Default is 'awgn'.
     """
 
     # --- constants ---
@@ -411,6 +456,13 @@ def simulate_effective(number_sims: int = 500,
     labels_path = f'local/memmap_data/signs_tst_labels_{task}.npy'
 
     EB          = 1.0
+
+    if channel == 'awgn':
+        FADING = False
+    elif channel == 'rayleigh':
+        FADING = True
+    else:
+        raise ValueError(f'Invalid channel! Got {channel}')
 
     # --- load data ---
 
@@ -442,7 +494,10 @@ def simulate_effective(number_sims: int = 500,
 
         N0 = EB / 10**(EBN0/10)
         std = np.sqrt(N0/2)
-        channel = AWGN(standard_dev=std)
+        if FADING:
+            channel = Rayleigh(awgn_std=std)
+        else:
+            channel = AWGN(standard_dev=std)
 
         rx_int_preds = np.empty(number_sims, dtype=np.uint32)
         bit_errors = 0
@@ -457,17 +512,25 @@ def simulate_effective(number_sims: int = 500,
             else:
                 tx_bits = data_bits
             tx_symbols = phy.qam_modulate(tx_bits)
-            if modulation_type == 'BPSK':
-                rx_symbols = channel.add_real_noise(tx_symbols)
+            if FADING:
+                fade_symbols, fade_coefs = channel.fade_signal(tx_symbols)
             else:
-                rx_symbols = channel.add_complex_noise(tx_symbols)
+                fade_symbols = tx_symbols
+            if modulation_type == 'BPSK':
+                rx_symbols = channel.add_real_noise(fade_symbols)
+            else:
+                rx_symbols = channel.add_complex_noise(fade_symbols)
+            if FADING:
+                eq_symbols = np.divide(rx_symbols, fade_coefs)
+            else:
+                eq_symbols = rx_symbols
             if channel_coding and vitdec_type == 'soft':
-                rx_data_bits = phy.viterbi_decode(rx_symbols, dec_type='soft')
+                rx_data_bits = phy.viterbi_decode(eq_symbols, dec_type='soft')
             elif channel_coding and vitdec_type == 'hard':
-                rx_bits = phy.qam_demodulate(rx_symbols)
+                rx_bits = phy.qam_demodulate(eq_symbols)
                 rx_data_bits = phy.viterbi_decode(rx_bits, dec_type='hard')
             else:
-                rx_data_bits = phy.qam_demodulate(rx_symbols)
+                rx_data_bits = phy.qam_demodulate(eq_symbols)
 
             rx_int_preds[k] = block_coder.decode(rx_data_bits)
 
@@ -490,7 +553,7 @@ def simulate_effective(number_sims: int = 500,
 def simulate_end_to_end(number_sims: int = 500, 
                         snrs: np.ndarray = np.linspace(-20, 20, 7), 
                         task: str = 'shapes', message_length: int = 2,
-                        modulation_type: str = 'BPSK'):
+                        modulation_type: str = 'BPSK', channel: str = 'awgn'):
     """
     This function simulates the end-to-end system.
 
@@ -511,6 +574,9 @@ def simulate_end_to_end(number_sims: int = 500,
     modulation_type : str
         The modulation type to use.
         Default is 'BPSK'.
+    channel : str
+        The channel to use. Options are 'awgn' and 'rayleigh'.
+        Default is 'awgn'.
     """
     
     # --- constants ---
@@ -524,12 +590,19 @@ def simulate_end_to_end(number_sims: int = 500,
     elif task == 'isSpeedLimit':
         N_CLS = 2
 
+    if channel == 'awgn':
+        FADING = False
+    elif channel == 'rayleigh':
+        FADING = True
+    else:
+        raise ValueError(f'Invalid channel! Got {channel}')
+
     tsk = task
     m_len = message_length
     mod = modulation_type
 
-    encoder_path = f'local/models/end_to_end/len{m_len}_{mod}_encoder.keras'
-    decoder_path = f'local/models/end_to_end/{tsk}_len{m_len}_{mod}_decoder.keras'
+    encoder_path = f'local/models/end_to_end/len{m_len}_{mod}_{channel}_encoder.keras'
+    decoder_path = f'local/models/end_to_end/{tsk}_len{m_len}_{mod}_{channel}_decoder.keras'
     images_path = 'local/memmap_data/signs_tst_data.npy'
     labels_path = f'local/memmap_data/signs_tst_labels_{tsk}.npy'
 
@@ -564,7 +637,10 @@ def simulate_end_to_end(number_sims: int = 500,
 
         N0 = EB / 10**(EBN0/10)
         std = np.sqrt(N0/2)
-        channel = AWGN(standard_dev=std)
+        if FADING:
+            channel = Rayleigh(awgn_std=std)
+        else:
+            channel = AWGN(standard_dev=std)
 
         if modulation_type == 'BPSK':
             rx_dim = coded_bits.shape[1]
@@ -578,12 +654,24 @@ def simulate_end_to_end(number_sims: int = 500,
         for k, tx_bits in enumerate(coded_bits):
             
             tx_symbols = phy.qam_modulate(tx_bits)
-            if modulation_type == 'BPSK':
-                rx_symbols = channel.add_real_noise(tx_symbols)
+            if FADING:
+                fade_symbols, fade_coefs = channel.fade_signal(tx_symbols)
             else:
-                rx_symbols = channel.add_complex_noise(tx_symbols)
-                rx_symbols = np.concatenate((rx_symbols.real, rx_symbols.imag))
-            all_rx_symbols[k] = rx_symbols
+                fade_symbols = tx_symbols
+            if modulation_type == 'BPSK':
+                rx_symbols = channel.add_real_noise(fade_symbols)
+                if FADING:
+                    eq_symbols = np.divide(rx_symbols, fade_coefs)
+                else:
+                    eq_symbols = rx_symbols
+            else:
+                rx_symbols = channel.add_complex_noise(fade_symbols)
+                if FADING:
+                    eq_symbols = np.divide(rx_symbols, fade_coefs)
+                else:
+                    eq_symbols = rx_symbols
+                eq_symbols = np.concatenate((eq_symbols.real, eq_symbols.imag))
+            all_rx_symbols[k] = eq_symbols
 
             print(f'\rSample {k+1}/{number_sims} processed.', end='')
 
