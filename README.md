@@ -1,8 +1,8 @@
 # Conceptual Learning and Causal Reasoning for Semantic Communication
 
-(Description of the project here)
+This repository contains all code related to the paper "Conceptual Learning and Causal Reasoning for Semantic Communication" by Dylan Wheeler and Bala Natarajan [preprint reference]. The main contributions of the paper are integrated of a variational autoencoder architecture and Wasserstein distance loss for improved learning of the domains of a conceptual space, and then a causal reasoning-based approach for intelligent communication given the learned semantic space.
 
-The project experimental results can be recreated using the code in this repository. Steps for carrying out the experiments are detailed below. Note that all experiments were performed on a Linux machine running Ubuntu 22.04.
+The project experimental results can be recreated using the code in this repository. Steps for carrying out the experiments are presented below in a tutorial style. Note that all experiments were originally performed on a Linux machine running Ubuntu 22.04.
 
 ## Environment Setup
 
@@ -36,7 +36,7 @@ The project experiments consist of six primary steps:
 
 ### 1. Prepare the data
 
-This project uses the German traffic sign dataset [1]. The original dataset can be downloaded [here](https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html). For this project, the following files are used:
+This project uses the German traffic sign dataset [2]. The original dataset can be downloaded [here](https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html). For this project, the following files are used:
 
 - GTSRB_Final_Training_Images.zip (Training data)
 - GTSRB_Final_Test_Images.zip (Test data)
@@ -183,3 +183,9 @@ To perform this simulation, run the script `6_2_sim_message_length.py`. This scr
 To evaluate the performance of the proposed system, it is compared to various baselines as described above.
 
 To perform this simulation, run the script `6_3_sim_compare_baselines.py`. This script simulates the proposed and baseline systems over the test set for the various tasks, and saves plots of the task accuracy vs. SNR to the `local/figures/simulations/` subdirectory.
+
+## References
+
+[1] preprint reference when available
+
+[2] Johannes Stallkamp, Marc Schlipsing, Jan Salmen, and Christian Igel. The German Traffic Sign Recognition Benchmark: A Multi-class Classification Competition. International Joint Conference on Neural Networks (IJCNN 2011), pp. 1453-1460, IEEE Press.
