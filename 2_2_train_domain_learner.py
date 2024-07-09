@@ -145,7 +145,7 @@ def main(domain: str):
                        proto_update_step_size=PROTO_STEP_SIZE, mu=MU, 
                        warmup=WARMUP)
 
-    ctrl.save_models('local/models/')
+    ctrl.save_models(save_path='local/models/', model_name=domain+'_model')
 
 # ------------------------------------------------------------------------------
 

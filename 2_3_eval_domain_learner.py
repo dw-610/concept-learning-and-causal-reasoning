@@ -15,7 +15,7 @@ from modules.cslearn.controllers import ImageLearningController
 
 def main(domain: str):
 
-    figpath = 'local/figures/'
+    figpath = 'local/figures/encoders/'
 
     if not os.path.exists(figpath):
         os.makedirs(figpath)
@@ -80,29 +80,32 @@ def main(domain: str):
     else:
         raise ValueError('Invalid domain.')
 
-    ctrl.eval_plot_accuracy_curves(save_path=f'{figpath}{domain}_acc.png')
+    ctrl.eval_plot_accuracy_curves(save_path=f'{figpath}{domain}_acc.pdf')
+
+    markers = ['^', 's', '*', 'o']
 
     if domain is not 'symbols':
         ctrl.eval_plot_scattered_features(
             legend=legend,
-            save_path=f'{figpath}{domain}_scatteredFeats.png',
-            colors=colors if domain == 'colors' else None
+            save_path=f'{figpath}{domain}_scatteredFeats.pdf',
+            colors=colors if domain == 'colors' else None,
+            markers=markers if domain == 'shapes' else None
         )
 
     ctrl.eval_plot_similarity_heatmap(legend=legend,
-                                      save_path=f'{figpath}{domain}_simHeatmap')
+                                      save_path=f'{figpath}{domain}_simHeatmap.pdf')
 
     ctrl.eval_show_decoded_protos(
         legend=legend,
-        save_path=f'{figpath}{domain}_dec_protos.png'
+        save_path=f'{figpath}{domain}_dec_protos.pdf'
     )
 
-    ctrl.eval_compare_true_and_generated(which='training')
+    # ctrl.eval_compare_true_and_generated(which='training')
 
-    ctrl.eval_compare_true_and_generated(
-        which='validation',
-        save_path=f'{figpath}{domain}_trueVsGen.png'
-    )
+    # ctrl.eval_compare_true_and_generated(
+    #     which='validation',
+    #     save_path=f'{figpath}{domain}_trueVsGen.pdf'
+    # )
 
     if domain == 'shapes':
         fixed_dims = [0.0, 0.0]
@@ -113,14 +116,24 @@ def main(domain: str):
     else:
         raise ValueError('Invalid domain.')
 
-    ctrl.eval_visualize_all_dimensions(
-        save_path=f'{figpath}{domain}_visDims.png', fixed_dims=fixed_dims)
+    if domain is 'shapes':
+        ctrl.eval_visualize_all_dimensions(
+            save_path=f'{figpath}{domain}_visDims.pdf', fixed_dims=fixed_dims,
+            figsize=(7.16,1.45), steps=10)
+    elif domain is 'colors':
+        ctrl.eval_visualize_all_dimensions(
+            save_path=f'{figpath}{domain}_visDims.pdf', fixed_dims=fixed_dims,
+            figsize=(7.16,2.15), steps=10)
+    elif domain is 'symbols':
+        ctrl.eval_visualize_all_dimensions(
+            save_path=f'{figpath}{domain}_visDims.pdf', fixed_dims=fixed_dims,
+            figsize=(7.16,10.8), steps=10)
 
 # ------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     
-    domains = ['shapes', 'colors', 'symbols']
+    domains = ['shapes']
 
     for domain in domains:
         print(f'\n\nEvaluating domain learner on {domain} data.')
