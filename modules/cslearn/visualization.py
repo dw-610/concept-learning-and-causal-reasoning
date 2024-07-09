@@ -180,6 +180,7 @@ def plot_decoded_protos(
         prototypes,
         dataset = str,
         legend: Optional[list] = None,
+        figsize: Optional[tuple] = (3.5, 3.5),
         save_path: Optional[str] = None,
         show: Optional[bool] = True,
         block: Optional[bool] = False
@@ -199,6 +200,10 @@ def plot_decoded_protos(
     legend : list, optional
         A list of strings to use as the legend entries.
         If None, no legend is used.
+        Default value is None.
+    figsize : tuple, optional
+        A tuple of two integers specifying the figure size.
+        Default value is (3.5, 3.5).
     save_path : str, optional
         Path to save image, including the file name. 
         If None, image is not saved.
@@ -218,7 +223,7 @@ def plot_decoded_protos(
     _, axs = plt.subplots(
         nrows=grid_width,
         ncols=grid_height,
-        figsize=(grid_width*2,grid_height*2)
+        figsize=figsize
     )
 
     if dataset == 'mnist':
@@ -238,7 +243,8 @@ def plot_decoded_protos(
                     ax.imshow(ims[i])
                 ax.axis('off')
                 ax.set_title(
-                    legend[i] if legend is not None else f'Prototype {i+1}'
+                    legend[i] if legend is not None else f'Prototype {i+1}',
+                    fontsize=10
                 )
                 i+=1
 
@@ -369,7 +375,9 @@ def plot_true_and_decoded(
 def plot_scattered_features(
         features,
         labels,
+        figsize: Optional[tuple] = (3.5, 3.5),
         colors: Optional[list] = None,
+        markers: Optional[list] = None,
         legend: Optional[list] = None,
         save_path: Optional[str] = None,
         show: Optional[bool] = True,
@@ -388,6 +396,8 @@ def plot_scattered_features(
         where the labels are one-hot encoded.
     colors : list
         A list of color-specifying strings.
+    markers : list
+        A list of marker-specifying strings.
     legend : list   
         A list of strings to use as the legend entries.
     save_path : str, optional
@@ -405,6 +415,19 @@ def plot_scattered_features(
     # get dimensionality of features
     dim = features.shape[1]
 
+    # get the axis limits
+    xmin = np.min(features[:, 0])
+    xmax = np.max(features[:, 0])
+    ymin = np.min(features[:, 1])
+    ymax = np.max(features[:, 1])
+    ax_min = np.min([xmin, ymin])
+    ax_max = np.max([xmax, ymax])
+    if dim == 3:
+        zmin = np.min(features[:, 2])
+        zmax = np.max(features[:, 2])
+        ax_min = np.min([ax_min, zmin])
+        ax_max = np.max([ax_max, zmax])
+
     # get the number of properties
     number_of_classes = labels.shape[1]
 
@@ -412,7 +435,7 @@ def plot_scattered_features(
     labels = np.argmax(labels, axis=1)
 
     # create the figure and axis
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111, projection='3d' if dim==3 else None)
 
     # loop through each class and plot the scatters
@@ -424,10 +447,10 @@ def plot_scattered_features(
             ax.scatter(
                 subset[:, 0], 
                 subset[:, 1], 
-                s = 100, 
+                s = 25, 
                 label=str(i),
-                alpha=0.75,
-                marker='.',
+                alpha=0.50,
+                marker=markers[i] if markers is not None else '.',
                 color=colors[i] if colors is not None else None,
             )
         elif dim == 3:
@@ -437,24 +460,32 @@ def plot_scattered_features(
                 subset[:, 2], 
                 s = 100, 
                 label=str(i),
-                alpha=0.75,
-                marker='.',
+                alpha=0.50,
+                marker=markers[i] if markers is not None else '.',
                 color=colors[i] if colors is not None else None,
             )
         else:
             raise NotImplementedError("features must be 2D or 3D")
+        
+    # set axis limits
+    ax.set_xlim(ax_min, ax_max)
+    ax.set_ylim(ax_min, ax_max)
+    if dim == 3:
+        ax.set_zlim(ax_min, ax_max)
 
     # plot the legend if given
     if legend is not None:
-        plt.legend(legend)
+        plt.legend(legend, loc='best', fontsize='small')
 
-    # set axis labels and the title
-    ax.set_xlabel('Feature 1')
-    ax.set_ylabel('Feature 2')
+    # set axis labels
+    ax.set_xlabel('Feature 1', fontsize=10)
+    ax.set_ylabel('Feature 2', fontsize=10)
     if dim==3:
-        ax.set_zlabel('Feature 3')
-    ax.set_title(f'{dim}D Feature Vectors')
+        ax.set_zlabel('Feature 3', fontsize=10)
+    # ax.set_title(f'{dim}D Feature Vectors')
     plt.grid(visible=True)
+    plt.tight_layout()
+    plt.tick_params(axis='both', which='major', labelsize=8)
 
     if save_path is not None:
         save_path = utils.get_unused_name(save_path)
@@ -560,6 +591,7 @@ def plot_heatmap(
         matrix,
         title,
         legend,
+        figsize: Optional[tuple] = (3.5, 3.5),
         save_path: Optional[str] = None,
         show: Optional[bool] = True,
         block: Optional[bool] = False
@@ -587,12 +619,14 @@ def plot_heatmap(
         Default value is False.
     """
 
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=figsize)
     plt.imshow(matrix, cmap='hot', interpolation='nearest')
-    plt.colorbar()
-    plt.xticks(np.arange(len(legend)), legend, rotation='vertical')
-    plt.yticks(np.arange(len(legend)), legend)
-    plt.title(title)
+    plt.colorbar(shrink=0.73)
+    plt.xticks(np.arange(len(legend)), legend, rotation=45)
+    plt.yticks(np.arange(len(legend)), legend, rotation=45)
+    # plt.title(title)
+    plt.tick_params(axis='both', which='major', labelsize=8)
+    plt.tight_layout()
 
     if save_path is not None:
         plt.savefig(utils.get_unused_name(save_path))
@@ -725,6 +759,7 @@ def visualize_all_dimensions(
         is_random_fixed_dims: bool = False,
         is_grayscale: bool = False,
         show: Optional[bool] = True,
+        figsize: Optional[tuple] = (3.5, 3.5),
         save_path: Optional[str] = None,
         block: Optional[bool] = False
     ):
@@ -761,6 +796,9 @@ def visualize_all_dimensions(
         If True, the plot will be shown.
         If False, the plot will not be shown.
         Default value is True.
+    figsize : tuple
+        A tuple of two integers specifying the figure size.
+        Default value is (3.5, 3.5).
     save_path : str
         If specified, the plot will be saved to the specified path.
         Default value is None.
@@ -773,7 +811,7 @@ def visualize_all_dimensions(
     n_dim = features.shape[1]
 
     # initialize the subplots
-    fig, axs = plt.subplots(n_dim, steps, figsize=(steps, n_dim))
+    fig, axs = plt.subplots(n_dim, steps, figsize=figsize)
 
     # if not provided, set the fixed dimension values
     if fixed_dims is None:

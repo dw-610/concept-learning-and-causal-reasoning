@@ -25,7 +25,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 from contextlib import nullcontext
 
 from . import feeders
@@ -814,7 +814,8 @@ class ImageLearningController():
 
     def save_models(
           self,
-          save_path: str,  
+          save_path: str, 
+          model_name: Optional[str] = None 
         ):
         """
         Method to save the models after training.
@@ -823,6 +824,9 @@ class ImageLearningController():
         ----------
         save_path : str
             The path to the directory to save the models to.
+        model_name : str, optional
+            The name to use for the saved models. If None, the name will be
+            generated based on the dataset, learner type, and timestamp.
         """
         # check that the models have been trained
         assert self.models_trained, \
@@ -834,8 +838,11 @@ class ImageLearningController():
             save_path += '/'
 
         # create a directory with the data set, learner type, and timestamp
-        save_path += self.dataset + '_' + self.learner_type + '_' + \
-            datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '/'
+        if model_name is None:
+            save_path += self.dataset + '_' + self.learner_type + '_' + \
+                datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + '/'
+        else:
+            save_path += model_name + '/'
         os.mkdir(save_path)
         
         # save the parameter dictionary
@@ -959,6 +966,7 @@ class ImageLearningController():
             self,
             which: Optional[str] = 'both',
             show: Optional[bool] = True,
+            figsize: Optional[Tuple[int,int]] = (3.5, 2.5),
             save_path: Optional[str] = None,
             block: Optional[bool] = True
         ):
@@ -974,6 +982,9 @@ class ImageLearningController():
         show : bool, optional
             Whether to show the plot.
             Default is True.
+        figsize : tuple, optional
+            The size of the figure to plot.
+            Default is (3.5, 2.5).
         save_path : str, optional
             The path to save the plot to. If None, the plot is not saved.
             Default is None.
@@ -1001,14 +1012,17 @@ class ImageLearningController():
         epochs = np.arange(1, len(trn_acc)+1)
 
         # plot the losses
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=figsize)
         if which == 'training' or which == 'both':
-            plt.plot(epochs, trn_acc, label='Training Accuracy')
+            plt.plot(epochs, trn_acc, label='Training Accuracy', linewidth=1.5)
         if which == 'validation' or which == 'both':
-            plt.plot(epochs, vld_acc, label='Validation Accuracy')
-        plt.xlabel('Epoch')
-        plt.ylabel('Accuracy')
-        plt.legend()
+            plt.plot(epochs, vld_acc, label='Validation Accuracy', 
+                     linewidth=1.5)
+        plt.xlabel('Epoch', fontsize=10)
+        plt.ylabel('Accuracy', fontsize=10)
+        plt.tight_layout()
+        plt.tick_params(axis='both', which='major', labelsize=8)
+        plt.legend(loc='best', fontsize='small')
         plt.grid()
 
         # save the plot with an unused file name if a save path is provided
@@ -1097,9 +1111,11 @@ class ImageLearningController():
             self,
             which: Optional[str] = 'validation',
             show: Optional[bool] = True,
+            figsize: Optional[Tuple[int,int]] = (3.5, 3.5),
             save_path: Optional[str] = None,
             block: Optional[bool] = True,
             colors: Optional[list] = None,
+            markers: Optional[list] = None,
             legend: Optional[list] = None
         ):
         """
@@ -1123,6 +1139,9 @@ class ImageLearningController():
         colors : list, optional
             A list of colors to use for the different classes.
             Default is None, for which colors are automatically chosen.
+        markers : list, optional
+            A list of markers to use for the different classes.
+            Default is None, for which markers are automatically chosen.
         legend : list, optional
             A list of strings to use for the legend.
             Default is None, for which no legend is shown
@@ -1183,9 +1202,11 @@ class ImageLearningController():
             features=features,
             labels=labels,
             show=show,
+            figsize=figsize,
             save_path=save_path,
             block=block,
             colors=colors,
+            markers=markers,
             legend=legend
         )
     
@@ -1193,6 +1214,7 @@ class ImageLearningController():
             self,
             legend: Optional[list] = None,
             show: Optional[bool] = True,
+            figsize: Optional[Tuple[int,int]] = (3.5, 3.5),
             save_path: Optional[str] = None,
             block: Optional[bool] = True
         ):
@@ -1208,6 +1230,9 @@ class ImageLearningController():
         show : bool, optional
             Whether to show the plot.
             Default is True.
+        figsize : tuple, optional
+            The size of the figure to plot.
+            Default is (3.5, 3.5).
         save_path : str, optional
             The path to save the plot to. If None, the plot is not saved.
             Default is None.
@@ -1233,6 +1258,7 @@ class ImageLearningController():
             dataset=self.dataset,
             legend=legend,
             show=show,
+            figsize=figsize,
             save_path=save_path,
             block=block
         )
@@ -1380,6 +1406,7 @@ class ImageLearningController():
             self,
             legend,
             show: Optional[bool] = True,
+            figsize: Optional[Tuple[int,int]] = (3.5, 3.5),
             save_path: Optional[str] = None,
             block: Optional[bool] = True
         ):
@@ -1426,7 +1453,8 @@ class ImageLearningController():
             legend=legend,
             save_path=save_path,
             show=show,
-            block=block
+            block=block,
+            figsize=figsize
         )
 
     def eval_visualize_dimension(
@@ -1538,6 +1566,7 @@ class ImageLearningController():
             is_random_fixed_dims: Optional[bool] = False,
             is_grayscale: Optional[bool] = False,
             show: Optional[bool] = True,
+            figsize: Optional[Tuple[int,int]] = (3.5, 3.5),
             save_path: Optional[str] = None,
             block: Optional[bool] = True
         ):
@@ -1566,6 +1595,9 @@ class ImageLearningController():
         show : bool, optional
             Whether to show the plot.
             Default is True.
+        figsize : tuple, optional
+            The size of the figure to plot.
+            Default is (3.5, 3.5).
         save_path : str, optional
             The path to save the plot to. If None, the plot is not saved.
             Default is None.
@@ -1610,6 +1642,7 @@ class ImageLearningController():
             is_random_fixed_dims=is_random_fixed_dims,
             is_grayscale=is_grayscale,
             show=show,
+            figsize=figsize,
             save_path=save_path,
             block=block
         )
