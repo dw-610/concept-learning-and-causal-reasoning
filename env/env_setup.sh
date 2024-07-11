@@ -2,8 +2,8 @@
 
 source ~/anaconda3/etc/profile.d/conda.sh
 
-conda create -n sccsr-env-test python=3.10.12 -y
-conda activate sccsr-env-test
+conda create -n sccsr-env python=3.10.12 -y
+conda activate sccsr-env
 
 conda install -c conda-forge -c anaconda -c defaults numpy=1.26.4 -y
 conda install -c conda-forge -c anaconda -c defaults matplotlib=3.8.4 -y
