@@ -1,6 +1,10 @@
 # Conceptual Learning and Causal Reasoning for Semantic Communication
 
-This repository contains all code related to the paper "Conceptual Learning and Causal Reasoning for Semantic Communication" by Dylan Wheeler and Bala Natarajan [preprint reference]. The main contributions of the paper are integrated of a variational autoencoder architecture and Wasserstein distance loss for improved learning of the domains of a conceptual space, and then a causal reasoning-based approach for intelligent communication given the learned semantic space.
+This repository contains all code related to the paper "Conceptual Learning and Causal Reasoning for Semantic Communication" by Dylan Wheeler and Bala Natarajan. The main contributions of the paper are integrated of a variational autoencoder architecture and Wasserstein distance loss for improved learning of the domains of a conceptual space, and then a causal reasoning-based approach for intelligent communication given the learned semantic space.
+
+**Paper**: [IEEE TechRxiv](https://www.techrxiv.org/users/800335/articles/1182196-conceptual-learning-and-causal-reasoning-for-semantic-communication)
+
+**Citation**: Dylan Wheeler, Balasubramaniam Natarajan. Conceptual Learning and Causal Reasoning for Semantic Communication. TechRxiv. July 15, 2024.
 
 The project experimental results can be recreated using the code in this repository. Steps for carrying out the experiments are presented below in a tutorial style. Note that all experiments were originally performed on a Linux machine running Ubuntu 22.04.
 
@@ -36,7 +40,7 @@ The project experiments consist of six primary steps:
 
 ### 1. Prepare the data
 
-This project uses the German traffic sign dataset [2]. The original dataset can be downloaded [here](https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html). For this project, the following files are used:
+This project uses the German traffic sign dataset [1]. The original dataset can be downloaded [here](https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html). For this project, the following files are used:
 
 - GTSRB_Final_Training_Images.zip (Training data)
 - GTSRB_Final_Test_Images.zip (Test data)
@@ -186,6 +190,4 @@ To perform this simulation, run the script `6_3_sim_compare_baselines.py`. This 
 
 ## References
 
-[1] preprint reference when available
-
-[2] Johannes Stallkamp, Marc Schlipsing, Jan Salmen, and Christian Igel. The German Traffic Sign Recognition Benchmark: A Multi-class Classification Competition. International Joint Conference on Neural Networks (IJCNN 2011), pp. 1453-1460, IEEE Press.
+[1] Johannes Stallkamp, Marc Schlipsing, Jan Salmen, and Christian Igel. The German Traffic Sign Recognition Benchmark: A Multi-class Classification Competition. International Joint Conference on Neural Networks (IJCNN 2011), pp. 1453-1460, IEEE Press.
