@@ -17,3 +17,4 @@ pip install sentence-transformers==3.0.1
 pip install lingam==1.8.3
 pip install dowhy==0.11.1
 pip install econml==0.15.0
+pip install tf-keras==2.17.0
